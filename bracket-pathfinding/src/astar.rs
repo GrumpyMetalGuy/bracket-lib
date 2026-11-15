@@ -109,13 +109,13 @@ impl AStar {
         let s = Node {
             idx,
             f: q.g + cost + distance_to_end,
-            g: cost,
+            g: q.g + cost,
         };
 
         // If a node with the same position as successor is in the open list with a lower f, skip add
         let mut should_add = true;
         if let Some(e) = self.parents.get(&idx) {
-            if e.1 < s.g {
+            if e.1 <= s.g {
                 should_add = false;
             }
         }
@@ -257,5 +257,33 @@ mod test {
         let path = a_star_search(0, len - 1, &map);
         println!("{:?}", path.steps);
         assert_eq!(path.steps, (0..len).collect::<Vec<_>>());
+    }
+
+    /// Node 3 is reachable via a cheap route (0->1->3, total 2) and a
+    /// dearer route (0->2->3, total 10) arriving earlier due to a low
+    /// heuristic. A correct A* must keep the cheaper parent.
+    struct ParentCostMap;
+
+    impl BaseMap for ParentCostMap {
+        fn get_available_exits(&self, idx: usize) -> smallvec::SmallVec<[(usize, f32); 10]> {
+            match idx {
+                0 => smallvec![(1, 1.0), (2, 9.0)],
+                1 => smallvec![(3, 1.0)],
+                2 => smallvec![(3, 1.0)],
+                3 => smallvec![],
+                _ => smallvec![],
+            }
+        }
+
+        fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
+            (idx1.abs_diff(idx2)) as f32
+        }
+    }
+
+    #[test]
+    fn keeps_cheaper_parent() {
+        let map = ParentCostMap;
+        let path = a_star_search(0, 3, &map);
+        assert_eq!(path.steps, [0, 1, 3]);
     }
 }
