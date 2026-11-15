@@ -3794,6 +3794,8 @@ impl FastNoise {
         let yr = fast_round(y);
 
         let mut distance: f32 = 999999.0;
+        let mut xc: i32 = 0;
+        let mut yc: i32 = 0;
 
         match self.cellular_distance_function {
             CellularDistanceFunction::Euclidean => {
@@ -3810,6 +3812,8 @@ impl FastNoise {
 
                         if new_distance < distance {
                             distance = new_distance;
+                            xc = xi;
+                            yc = yi;
                         }
                     }
                 }
@@ -3828,6 +3832,8 @@ impl FastNoise {
 
                         if new_distance < distance {
                             distance = new_distance;
+                            xc = xi;
+                            yc = yi;
                         }
                     }
                 }
@@ -3847,17 +3853,17 @@ impl FastNoise {
 
                         if new_distance < distance {
                             distance = new_distance;
+                            xc = xi;
+                            yc = yi;
                         }
                     }
                 }
             }
         }
 
-        //let lut_pos : u8;
         match self.cellular_return_type {
-            CellularReturnType::CellValue => {
-                self.val_coord_2d(self.seed as i32, x as i32, y as i32)
-            }
+            CellularReturnType::CellValue => self.val_coord_2d(self.seed as i32, xc, yc),
+            CellularReturnType::Distance => distance,
             _ => 0.0,
         }
     }
@@ -4199,7 +4205,28 @@ impl FastNoise {
 
 #[cfg(test)]
 mod tests {
-    use super::{CellularDistanceFunction, FastNoise, NoiseType};
+    use super::{CellularDistanceFunction, CellularReturnType, FastNoise, NoiseType};
+
+    #[test]
+    fn cellular_distance_returns_computed_distance() {
+        let mut noise = FastNoise::seeded(1337);
+        noise.set_noise_type(NoiseType::Cellular);
+        noise.set_cellular_return_type(CellularReturnType::Distance);
+        noise.set_frequency(0.08);
+
+        let mut seen_nonzero = false;
+        for y in 0..64 {
+            for x in 0..64 {
+                let v = noise.get_noise(x as f32, y as f32);
+                // Distance should be finite and within the cell neighborhood.
+                assert!(v.is_finite());
+                if v != 0.0 {
+                    seen_nonzero = true;
+                }
+            }
+        }
+        assert!(seen_nonzero, "cellular distance should not be flat zero");
+    }
 
     #[test]
     // Tests that we make an RGB triplet at defaults and it is black.
