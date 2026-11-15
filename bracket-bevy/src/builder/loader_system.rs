@@ -6,7 +6,7 @@ use bevy::{
     prelude::{
         AssetServer, Assets, Camera2d, Commands, Component, Mesh, Msaa, Res, ResMut, UntypedHandle,
     },
-    sprite::ColorMaterial,
+    sprite_render::ColorMaterial,
 };
 
 use super::image_fixer::ImagesToLoad;

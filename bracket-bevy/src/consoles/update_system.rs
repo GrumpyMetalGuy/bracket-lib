@@ -2,7 +2,7 @@ use crate::{BracketCamera, BracketContext, TerminalScalingMode};
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
-    render::camera::RenderTarget,
+    camera::RenderTarget,
     window::{WindowResized, WindowRef},
 };
 use bevy::window::PrimaryWindow;
@@ -128,6 +128,8 @@ pub(crate) fn update_mouse_position(
             panic!("The camera RenderTarget was an image, we shouldn't reach this case!")
         }
         RenderTarget::TextureView(_) => todo!(),
+        // No render target: nothing to unproject against, just skip.
+        RenderTarget::None { .. } => {}
     }
 
     if wnd_opt.is_some() {
@@ -142,7 +144,7 @@ pub(crate) fn update_mouse_position(
             let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
             let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
             let ndc_to_world =
-                camera_transform.compute_matrix() * camera.clip_from_view().inverse();
+                camera_transform.to_matrix() * camera.clip_from_view().inverse();
             let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
             let world_pos: Vec2 = world_pos.truncate();
 

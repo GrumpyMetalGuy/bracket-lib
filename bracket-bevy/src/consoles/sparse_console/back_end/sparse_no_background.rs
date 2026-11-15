@@ -2,9 +2,9 @@ use super::SparseConsoleBackend;
 use crate::consoles::{scaler::FontScaler, BracketMesh, ScreenScaler, SparseConsole};
 use bevy::{
     prelude::*,
-    render::mesh::{Indices, PrimitiveTopology},
-    render::render_asset::RenderAssetUsages,
-    sprite::MeshMaterial2d,
+    mesh::{Indices, PrimitiveTopology},
+    asset::RenderAssetUsages,
+    sprite_render::MeshMaterial2d,
 };
 
 pub(crate) struct SparseBackendNoBackground {

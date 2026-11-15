@@ -34,6 +34,12 @@ upstream `amethyst/bracket-lib`. Notable behavioral notes:
   `MaterialMesh2dBundle`. MSAA moved from a global `Msaa` resource to a
   per-camera `Msaa` component on the camera entity.
 
+- Bumped `bracket-bevy` to bevy 0.17. This was mostly module re-export moves
+  (`bevy::mesh`, `bevy::camera`, `bevy::sprite_render`, `bevy::asset`), plus
+  `GlobalTransform::compute_matrix` -> `to_matrix`. `Camera::target` gained a
+  `RenderTarget::None` variant; the mouse-unproject code treats it as
+  no-op (no window to project into).
+
 ## What happened to RLTK?
 
 This *is* RLTK, renamed because it is increasingly finding usage outside of just Roguelikes. It's also been divided into a number of crates, to make it easy to pick-and-choose the features you need.

@@ -3,7 +3,7 @@ use crate::{
     fonts::FontStore,
     FontCharType, TerminalScalingMode,
 };
-use bevy::{render::mesh::Mesh2d, prelude::Resource};
+use bevy::{mesh::Mesh2d, prelude::Resource};
 use std::collections::HashMap;
 use bracket_color::prelude::RGBA;
 use bracket_geometry::prelude::{Point, Rect};
