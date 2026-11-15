@@ -20,6 +20,8 @@ Legend: [X] fixed (branch named), [-] skipped (feature/env/question/no repro/non
 - #359 unused incremental key      — fix/359
 - #363 A* g-cost tracking          — fix/363
 - #365/#366 crossterm flush        — fix/365
+- #303 low_cpu forwarding           — pr/303 (merged)
+- #335 hashbrown astar              — pr/335 (merged)
 
 ## Skipped (not code bugs this fork should change)
 
@@ -32,9 +34,15 @@ Legend: [X] fixed (branch named), [-] skipped (feature/env/question/no repro/non
 - #152, #183, #255, #259, #262, #279, #281, #290, #308, #320, #330,
   #338, #361, #362 — usage/perf/meta/unreproducible (no code change)
 - #257 — duplicate of #346-style crossterm sizing; needs repro
-- #143, #303, #304, #305, #307, #313, #317, #321, #335, #342, #351,
-  #364 — PRs; #321/#364 overlapped by #343/#329 fixes here; others are
-  feature/dependency/perf changes left to upstream
+- #143, #304, #305, #307, #313, #317, #321, #342, #351, #364 — PRs;
+  #321/#364 overlapped by #343/#329 fixes here; #303 (low_cpu) and #335
+  (hashbrown) merged; the rest are feature/dependency/perf/styling
+  changes left to upstream. #313 (wgpu 0.15) not merged: the webgpu
+  feature is already broken on master by the winit 0.30 upgrade, so the
+  bump can't be verified and wgpu 0.15 itself is stale. #305 adds a
+  required `Console::get_offset` trait method (breaking); #304 changes
+  `DiceType::default()` and drops regex (behavior change); #342 is a
+  bevy 0.9->0.11 migration.
 
 ## Notes
 
