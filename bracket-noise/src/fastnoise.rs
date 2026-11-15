@@ -1761,7 +1761,7 @@ impl FastNoise {
         let mut noise = FastNoise {
             rng: RandomNumberGenerator::seeded(seed),
             seed,
-            frequency: 0.0,
+            frequency: 1.0,
             interp: Interp::Quintic,
             noise_type: NoiseType::Simplex,
             octaves: 3,
@@ -4200,6 +4200,19 @@ impl FastNoise {
 #[cfg(test)]
 mod tests {
     use super::{CellularDistanceFunction, FastNoise, NoiseType};
+
+    #[test]
+    fn seeded_defaults_to_unit_frequency() {
+        let noise = FastNoise::seeded(1337);
+        assert_eq!(noise.get_frequency(), 1.0);
+    }
+
+    #[test]
+    fn seeded_produces_nonzero_noise() {
+        let noise = FastNoise::seeded(1337);
+        let v = noise.get_noise(0.5, 0.5);
+        assert!(v != 0.0, "seeded noise should not be flat");
+    }
 
     #[test]
     // Tests that we make an RGB triplet at defaults and it is black.
