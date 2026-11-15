@@ -40,6 +40,11 @@ upstream `amethyst/bracket-lib`. Notable behavioral notes:
   `RenderTarget::None` variant; the mouse-unproject code treats it as
   no-op (no window to project into).
 
+- Bumped `bracket-bevy` to bevy 0.18. The buffered `Event`/`EventReader` system
+  became `Message`/`MessageReader`; `EventReader<T>` -> `MessageReader<T>`.
+  `Camera::target` moved from a field to a required `RenderTarget` component
+  (queried separately). `AssetEvent` ids are now passed by reference.
+
 ## What happened to RLTK?
 
 This *is* RLTK, renamed because it is increasingly finding usage outside of just Roguelikes. It's also been divided into a number of crates, to make it easy to pick-and-choose the features you need.

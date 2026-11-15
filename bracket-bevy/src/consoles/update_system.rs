@@ -35,7 +35,7 @@ pub(crate) fn update_consoles(
 
 pub(crate) fn replace_meshes(
     mut ctx: ResMut<BracketContext>,
-    mut ev_asset: EventReader<AssetEvent<Mesh>>,
+    mut ev_asset: MessageReader<AssetEvent<Mesh>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut update_mesh: Query<&mut Mesh2d, With<BracketMesh>>,
 ) {
@@ -76,7 +76,7 @@ pub(crate) fn update_timing(mut ctx: ResMut<BracketContext>, diagnostics: Res<Di
 
 pub(crate) fn window_resize(
     mut context: ResMut<BracketContext>,
-    mut resize_event: EventReader<WindowResized>,
+    mut resize_event: MessageReader<WindowResized>,
     mut scaler: ResMut<ScreenScaler>,
 ) {
     for e in resize_event.read() {
@@ -95,24 +95,24 @@ pub(crate) fn apply_all_batches(mut context: ResMut<BracketContext>) {
 pub(crate) fn update_mouse_position(
     wnds: Query<&Window>,
     primary_window: Query<&Window, With<PrimaryWindow>>,
-    q_camera: Query<(&Camera, &GlobalTransform), With<BracketCamera>>,
+    q_camera: Query<(&Camera, &GlobalTransform, &RenderTarget), With<BracketCamera>>,
     mut context: ResMut<BracketContext>,
     mut scaler: ResMut<ScreenScaler>,
 ) {
     // Modified from: https://bevy-cheatbook.github.io/cookbook/cursor2world.html
     // Bevy really needs a nicer way to do this
-    let (camera, camera_transform) = q_camera.single().unwrap();
+    let (camera, camera_transform, render_target) = q_camera.single().unwrap();
 
     let mut wnd_opt: Option<&Window> = None;
 
-    match camera.target {
+    match render_target {
         RenderTarget::Window(window_ref) => match window_ref {
             WindowRef::Primary => {
                 wnd_opt = Some(primary_window.single().unwrap());
             }
             WindowRef::Entity(entity) => {
                 wnd_opt = Some(
-                    wnds.get(entity).expect(
+                    wnds.get(*entity).expect(
                         format!(
                             "Couldn't get window with entity id {} and generation {} from query!",
                             entity.index(),
