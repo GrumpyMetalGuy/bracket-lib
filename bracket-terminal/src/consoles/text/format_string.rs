@@ -28,22 +28,55 @@ impl ColoredTextSpans {
             }
             let mut col_text = color_span.splitn(2, ']');
             let col_name = col_text.next().unwrap();
-            if let Some(text_span) = col_text.next() {
-                if !col_name.is_empty() {
-                    color_stack.push(find_color(col_name));
-                } else {
-                    color_stack.pop();
+            match col_text.next() {
+                Some(text_span) => {
+                    if !col_name.is_empty() {
+                        color_stack.push(find_color(col_name));
+                    } else {
+                        color_stack.pop();
+                    }
+                    result.spans.push((
+                        *color_stack
+                            .last()
+                            .unwrap_or(&RGBA::from_u8(255, 255, 255, 255)),
+                        text_span.to_string(),
+                    ));
+                    result.length += text_span.chars().count();
                 }
-                result.spans.push((
-                    *color_stack
-                        .last()
-                        .unwrap_or(&RGBA::from_u8(255, 255, 255, 255)),
-                    text_span.to_string(),
-                ));
-                result.length += text_span.chars().count();
+                None => {
+                    // No closing ']': the whole segment is plain text.
+                    result.spans.push((
+                        *color_stack
+                            .last()
+                            .unwrap_or(&RGBA::from_u8(255, 255, 255, 255)),
+                        col_name.to_string(),
+                    ));
+                    result.length += col_name.chars().count();
+                }
             }
         }
 
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ColoredTextSpans;
+
+    #[test]
+    fn plain_text_is_kept() {
+        let spans = ColoredTextSpans::new("hello");
+        assert_eq!(spans.length, 5);
+        assert_eq!(spans.spans.len(), 1);
+        assert_eq!(spans.spans[0].1, "hello");
+    }
+
+    #[test]
+    fn colored_text_keeps_text() {
+        let spans = ColoredTextSpans::new("#[red]hi#[] there");
+        assert_eq!(spans.length, 8);
+        assert_eq!(spans.spans[0].1, "hi");
+        assert_eq!(spans.spans[1].1, " there");
     }
 }
