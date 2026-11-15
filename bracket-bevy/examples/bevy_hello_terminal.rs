@@ -8,12 +8,12 @@ fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(bterm)
+        .add_plugins(bterm)
         .insert_resource(State {
             y: 0,
             going_down: true,
         })
-        .add_system(tick)
+        .add_systems(Update, tick)
         .run();
 }
 

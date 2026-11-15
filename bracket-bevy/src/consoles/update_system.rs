@@ -41,10 +41,10 @@ pub(crate) fn replace_meshes(
     mut meshes: ResMut<Assets<Mesh>>,
     mut update_mesh: Query<&mut Mesh2dHandle, With<BracketMesh>>,
 ) {
-    for ev in ev_asset.iter() {
-        if let AssetEvent::Created { handle } = ev {
+    for ev in ev_asset.read() {
+        if let AssetEvent::Added { id } = ev {
             for (old, new, done) in ctx.mesh_replacement.iter_mut() {
-                if handle.id() == new.0.id() {
+                if *id == new.0.id() {
                     update_mesh.for_each_mut(|mut m| {
                         if old.0.id() == m.0.id() {
                             *m = new.clone();
