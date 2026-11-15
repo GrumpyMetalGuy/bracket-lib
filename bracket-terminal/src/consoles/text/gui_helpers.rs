@@ -13,13 +13,7 @@ pub fn draw_box(
 ) {
     for y in sy..sy + height {
         for x in sx..sx + width {
-            console.set(
-                x,
-                y,
-                RGBA::from_f32(1.0, 1.0, 1.0, fg.a),
-                RGBA::from_f32(0.0, 0.0, 0.0, fg.a),
-                32,
-            );
+            console.set(x, y, bg, bg, 32);
         }
     }
 
@@ -73,13 +67,7 @@ pub fn draw_box_double(
 ) {
     for y in sy..sy + height {
         for x in sx..sx + width {
-            console.set(
-                x,
-                y,
-                RGBA::from_f32(1.0, 1.0, 1.0, fg.a),
-                RGBA::from_f32(0.0, 0.0, 0.0, fg.a),
-                32,
-            );
+            console.set(x, y, bg, bg, 32);
         }
     }
 
@@ -164,5 +152,23 @@ pub fn draw_bar_vertical(
         } else {
             console.set(sx, sy + y, fg, bg, to_cp437('░'));
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::draw_box;
+    use crate::prelude::{Point, VirtualConsole};
+    use bracket_color::prelude::RGBA;
+
+    #[test]
+    fn draw_box_fills_interior_with_bg() {
+        let mut console = VirtualConsole::new(Point::new(10, 10));
+        let fg = RGBA::from_u8(255, 0, 0, 255);
+        let bg = RGBA::from_u8(0, 255, 0, 255);
+        draw_box(&mut console, 1, 1, 3, 3, fg, bg);
+
+        let interior = console.tiles[(10 - 1 - 2) * 10 + 2].bg;
+        assert_eq!(interior, bg);
     }
 }
