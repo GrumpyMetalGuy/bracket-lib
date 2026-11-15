@@ -1,12 +1,13 @@
 use crate::{BracketCamera, BracketContext, TerminalScalingMode};
 use bevy::{
-    diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     ecs::event::Events,
     prelude::*,
     render::camera::RenderTarget,
     sprite::Mesh2dHandle,
-    window::WindowResized,
+    window::{WindowResized, WindowRef},
 };
+use bevy::window::PrimaryWindow;
 
 use super::{BracketMesh, ScreenScaler};
 
@@ -61,7 +62,7 @@ pub(crate) fn replace_meshes(
     ctx.mesh_replacement.retain(|(_, _, done)| !done);
 }
 
-pub(crate) fn update_timing(mut ctx: ResMut<BracketContext>, diagnostics: Res<Diagnostics>) {
+pub(crate) fn update_timing(mut ctx: ResMut<BracketContext>, diagnostics: Res<DiagnosticsStore>) {
     if let Some(fps_diagnostic) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
         if let Some(fps_avg) = fps_diagnostic.measurement() {
             ctx.fps = fps_avg.value.round();
@@ -95,35 +96,62 @@ pub(crate) fn apply_all_batches(mut context: ResMut<BracketContext>) {
 }
 
 pub(crate) fn update_mouse_position(
-    wnds: Res<Windows>,
+    wnds: Query<&Window>,
+    primary_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<BracketCamera>>,
     mut context: ResMut<BracketContext>,
-    scaler: Res<ScreenScaler>,
+    mut scaler: ResMut<ScreenScaler>,
 ) {
     // Modified from: https://bevy-cheatbook.github.io/cookbook/cursor2world.html
     // Bevy really needs a nicer way to do this
     let (camera, camera_transform) = q_camera.single();
-    let wnd = if let RenderTarget::Window(id) = camera.target {
-        wnds.get(id)
-    } else {
-        wnds.get_primary()
-    };
 
-    let wnd = if let Some(wnd) = wnd {
-        wnd
-    } else {
-        return;
-    };
+    let mut wnd_opt: Option<&Window> = None;
 
-    if let Some(screen_pos) = wnd.cursor_position() {
-        let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
-        let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
-        let ndc_to_world = camera_transform.compute_matrix() * camera.projection_matrix().inverse();
-        let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
-        let world_pos: Vec2 = world_pos.truncate();
+    match camera.target {
+        RenderTarget::Window(window_ref) => match window_ref {
+            WindowRef::Primary => {
+                wnd_opt = Some(primary_window.single());
+            }
+            WindowRef::Entity(entity) => {
+                wnd_opt = Some(
+                    wnds.get(entity).expect(
+                        format!(
+                            "Couldn't get window with entity id {} and generation {} from query!",
+                            entity.index(),
+                            entity.generation()
+                        )
+                        .as_str(),
+                    ),
+                );
+            }
+        },
+        // Is there a reason why the camera's RenderTarget should ever be an image??
+        RenderTarget::Image(_) => {
+            panic!("The camera RenderTarget was an image, we shouldn't reach this case!")
+        }
+        RenderTarget::TextureView(_) => todo!(),
+    }
 
-        let result = (world_pos.x, world_pos.y);
+    if wnd_opt.is_some() {
+        let wnd = wnd_opt.expect("Window was None!");
 
-        context.set_mouse_pixel_position(result, &scaler);
+        if let Some(screen_pos) = wnd.cursor_position() {
+            // This is a workaround to ensure that the Scaler's width and height are never 0.
+            // Res<Scaler> had to be changed to ResMut<Scaler>
+            // We should probably check why it's occasionally 0 to begin with.
+            scaler.set_screen_size(wnd.width(), wnd.height());
+
+            let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
+            let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
+            let ndc_to_world =
+                camera_transform.compute_matrix() * camera.projection_matrix().inverse();
+            let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
+            let world_pos: Vec2 = world_pos.truncate();
+
+            let result = (world_pos.x, world_pos.y * -1.0);
+
+            context.set_mouse_pixel_position(result, &scaler);
+        }
     }
 }
