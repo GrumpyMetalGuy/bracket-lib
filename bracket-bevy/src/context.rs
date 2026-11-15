@@ -389,7 +389,7 @@ impl BracketContext {
 
     /// Sets the alpha level on all foreground characters on the current layer.
     pub fn set_all_fg_alpha(&self, alpha: f32) {
-        self.terminals.lock()[self.current_layer()].set_all_bg_alpha(alpha);
+        self.terminals.lock()[self.current_layer()].set_all_fg_alpha(alpha);
     }
 
     /// Sets the alpha level on all background characters on the current layer.
@@ -519,7 +519,7 @@ impl BracketContext {
                 } => self.draw_bar_vertical(pos.x, pos.y, *height, *n, *max, color.fg, color.bg),
                 DrawCommand::SetClipping { clip } => self.set_clipping(*clip),
                 DrawCommand::SetFgAlpha { alpha } => self.set_all_fg_alpha(*alpha),
-                DrawCommand::SetBgAlpha { alpha } => self.set_all_fg_alpha(*alpha),
+                DrawCommand::SetBgAlpha { alpha } => self.set_all_bg_alpha(*alpha),
                 DrawCommand::SetAllAlpha { fg, bg } => self.set_all_alpha(*fg, *bg),
             })
         });

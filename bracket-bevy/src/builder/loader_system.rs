@@ -22,8 +22,7 @@ pub(crate) fn load_terminals(
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     if context.with_ortho_camera {
-        commands
-            .spawn((Camera2d, Msaa::Off, BracketCamera));
+        commands.spawn((Camera2d, Msaa::Off, BracketCamera));
     }
 
     // Setup the new context

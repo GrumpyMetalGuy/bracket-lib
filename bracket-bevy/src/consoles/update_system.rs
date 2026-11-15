@@ -28,9 +28,7 @@ pub(crate) fn update_consoles(
         }
     }
 
-    new_meshes
-        .drain(0..)
-        .for_each(|m| ctx.mesh_replacement.push(m));
+    new_meshes.into_iter().for_each(|m| ctx.mesh_replacement.push(m));
 }
 
 pub(crate) fn replace_meshes(
@@ -132,9 +130,7 @@ pub(crate) fn update_mouse_position(
         RenderTarget::None { .. } => {}
     }
 
-    if wnd_opt.is_some() {
-        let wnd = wnd_opt.expect("Window was None!");
-
+    if let Some(wnd) = wnd_opt {
         if let Some(screen_pos) = wnd.cursor_position() {
             // This is a workaround to ensure that the Scaler's width and height are never 0.
             // Res<Scaler> had to be changed to ResMut<Scaler>
