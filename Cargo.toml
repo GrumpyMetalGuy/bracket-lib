@@ -23,6 +23,8 @@ exclude = [
     "screenshots"
 ]
 resolver = "2" # Enables the new Cargo resolution engine
+
+[profile.dev]
 incremental = false # Causing issues with Windows builds
 
 [features]
