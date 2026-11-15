@@ -14,6 +14,18 @@ Early work has begun on writing a manual. You can find it in the `manual` folder
 
 **IMPORTANT**: If you are running the `webgpu` backend, you need to add `resolver = 2` to your `Cargo.toml` file. WGPU requires it for platform selection.
 
+## Known deviations from upstream
+
+This fork applies a set of bug fixes and dependency upgrades on top of
+upstream `amethyst/bracket-lib`. Notable behavioral notes:
+
+- Bumped `bracket-bevy` to bevy 0.13. `bracket-color`'s `RGB`/`RGBA` ->
+  `bevy::Color` conversions map to bevy's sRGB variants to preserve
+  pre-0.13 behavior. `RGBA::as_rgba_f32()` still returns *linear* RGBA
+  despite its name; this matches the historical implementation and is
+  deliberately kept for backwards compatibility (see the inline comment
+  in `bracket-color/src/rgba.rs`).
+
 ## What happened to RLTK?
 
 This *is* RLTK, renamed because it is increasingly finding usage outside of just Roguelikes. It's also been divided into a number of crates, to make it easy to pick-and-choose the features you need.

@@ -295,10 +295,15 @@ impl RGBA {
     }
 
     /// Converts an RGBA to an array of `f32`, useful in Bevy.
+    ///
+    /// Kept backwards-compatible with the pre-0.13 behavior: it converts to a
+    /// linear-RGBA array, despite the `as_rgba_f32` name. This should likely be
+    /// renamed to `as_linear_rgba_f32` (and return sRGB here) in a future
+    /// breaking release, but changing it now would alter downstream colors.
     #[cfg(feature = "bevy")]
     #[must_use]
     pub fn as_rgba_f32(&self) -> [f32; 4] {
-        bevy::prelude::Color::as_linear_rgba_f32([self.r, self.g, self.b, self.a].into())
+        bevy::prelude::Color::rgba(self.r, self.g, self.b, self.a).as_linear_rgba_f32()
     }
 
     /// Applies a quick grayscale conversion to the color
@@ -395,7 +400,9 @@ impl From<bevy::prelude::Color> for RGBA {
 #[cfg(feature = "bevy")]
 impl From<RGBA> for bevy::prelude::Color {
     fn from(item: RGBA) -> Self {
-        Self::from([item.r, item.g, item.b, item.a])
+        // bracket-color stores sRGB-encoded floats, so map to bevy's sRGB
+        // `Color` variant to match the pre-0.13 `From<[f32; 4]>` behavior.
+        bevy::prelude::Color::rgba(item.r, item.g, item.b, item.a)
     }
 }
 

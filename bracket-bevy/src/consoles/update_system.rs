@@ -63,13 +63,13 @@ pub(crate) fn replace_meshes(
 }
 
 pub(crate) fn update_timing(mut ctx: ResMut<BracketContext>, diagnostics: Res<DiagnosticsStore>) {
-    if let Some(fps_diagnostic) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+    if let Some(fps_diagnostic) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
         if let Some(fps_avg) = fps_diagnostic.measurement() {
             ctx.fps = fps_avg.value.round();
         }
     }
 
-    if let Some(frame_time) = diagnostics.get(FrameTimeDiagnosticsPlugin::FRAME_TIME) {
+    if let Some(frame_time) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FRAME_TIME) {
         if let Some(frame_time_avg) = frame_time.measurement() {
             ctx.frame_time_ms = (frame_time_avg.value * 1000.0).round();
         }
@@ -82,7 +82,7 @@ pub(crate) fn window_resize(
     mut scaler: ResMut<ScreenScaler>,
 ) {
     let mut reader = resize_event.get_reader();
-    for e in reader.iter(&resize_event) {
+    for e in reader.read(&resize_event) {
         scaler.set_screen_size(e.width, e.height);
         if let TerminalScalingMode::ResizeTerminals = context.scaling_mode {
             context.resize_terminals(&scaler);

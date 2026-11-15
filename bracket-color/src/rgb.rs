@@ -131,7 +131,9 @@ impl From<bevy::prelude::Color> for RGB {
 #[cfg(feature = "bevy")]
 impl From<RGB> for bevy::prelude::Color {
     fn from(item: RGB) -> Self {
-        Self::from([item.r, item.g, item.b])
+        // bracket-color stores sRGB-encoded floats, so map to bevy's sRGB
+        // `Color` variant to match the pre-0.13 `From<[f32; 3]>` behavior.
+        bevy::prelude::Color::rgb(item.r, item.g, item.b)
     }
 }
 
