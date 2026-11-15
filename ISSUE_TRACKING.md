@@ -24,6 +24,14 @@ Legend: [X] fixed (branch named), [-] skipped (feature/env/question/no repro/non
 - #335 hashbrown astar              — pr/335 (merged)
 - #313 wgpu bump + nearest filter   — fix/wgpu-bump (merged, wgpu 0.19)
 - (winit 0.30 cross-backend breakage) — fix/winit-030 (merged)
+- (bevy 0.9 -> 0.13 migration)        — deps/bevy-011 (merged, mirrors #342)
+- (bevy 0.13 -> 0.16 migration)      — deps/bevy-013, bevy-014, bevy-016 (merged)
+- (bevy 0.16 -> 0.20 migration)      — deps/bevy-017, bevy-018, bevy-019, bevy-020 (merged)
+- (rand 0.8 -> 0.10, rand_xorshift 0.3 -> 0.5) — deps/rand-010 (merged)
+- (crossterm 0.25 -> 0.29)           — deps/crossterm-029 (merged)
+- (image 0.24 -> 0.25)               — deps/image-025 (merged)
+- (object-pool 0.5 -> 0.6, hashbrown 0.13 -> 0.14) — deps/minor-bumps (merged)
+- (specs 0.18 -> 0.20)              — deps/specs-020 (merged)
 
 ## Skipped (not code bugs this fork should change)
 
@@ -41,8 +49,8 @@ Legend: [X] fixed (branch named), [-] skipped (feature/env/question/no repro/non
   (hashbrown) and #313 (wgpu bump, now 0.19) merged; the rest are
   feature/dependency/perf/styling changes left to upstream. #305 adds a
   required `Console::get_offset` trait method (breaking); #304 changes
-  `DiceType::default()` and drops regex (behavior change); #342 is a
-  bevy 0.9->0.11 migration.
+  `DiceType::default()` and drops regex (behavior change); #342 (bevy
+  0.9->0.11) was superseded by the full bevy 0.9->0.20 migration here.
 
 ## Notes
 
@@ -55,3 +63,7 @@ Legend: [X] fixed (branch named), [-] skipped (feature/env/question/no repro/non
   fix/winit-030 (merged) restored cross_term, curses and wasm, and
   fix/wgpu-bump (merged) restored webgpu by bumping wgpu to 0.19. All
   four backends plus native now compile.
+- bevy migrated 0.9 -> 0.20 across deps/bevy-011 .. deps/bevy-020
+  (skipping the broken 0.15.x umbrella releases). This subsumes PR #342
+  and issue #308 (bevy 0.9 tracking). Verified to compile and pass lib
+  tests; no render-integration test exists to verify visuals.
