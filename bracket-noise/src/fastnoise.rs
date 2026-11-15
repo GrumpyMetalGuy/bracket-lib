@@ -1761,7 +1761,7 @@ impl FastNoise {
         let mut noise = FastNoise {
             rng: RandomNumberGenerator::seeded(seed),
             seed,
-            frequency: 0.0,
+            frequency: 1.0,
             interp: Interp::Quintic,
             noise_type: NoiseType::Simplex,
             octaves: 3,
@@ -4226,6 +4226,19 @@ mod tests {
             }
         }
         assert!(seen_nonzero, "cellular distance should not be flat zero");
+    }
+
+    #[test]
+    fn seeded_defaults_to_unit_frequency() {
+        let noise = FastNoise::seeded(1337);
+        assert_eq!(noise.get_frequency(), 1.0);
+    }
+
+    #[test]
+    fn seeded_produces_nonzero_noise() {
+        let noise = FastNoise::seeded(1337);
+        let v = noise.get_noise(0.5, 0.5);
+        assert!(v != 0.0, "seeded noise should not be flat");
     }
 
     #[test]
