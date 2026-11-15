@@ -49,6 +49,9 @@ upstream `amethyst/bracket-lib`. Notable behavioral notes:
   was unchanged in 0.19. Note this pulls wgpu 29 transitively, which is separate
   from the wgpu 0.19 backend used by `bracket-terminal`.
 
+- Bumped `bracket-bevy` to bevy 0.20 (current latest). No source changes; the
+  API surface this fork uses was stable across 0.19 -> 0.20.
+
 ## What happened to RLTK?
 
 This *is* RLTK, renamed because it is increasingly finding usage outside of just Roguelikes. It's also been divided into a number of crates, to make it easy to pick-and-choose the features you need.
