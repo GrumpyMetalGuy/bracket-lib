@@ -30,6 +30,7 @@ impl specs::prelude::Component for Point {
 impl bevy::ecs::component::Component for Point {
     const STORAGE_TYPE: bevy::ecs::component::StorageType =
         bevy::ecs::component::StorageType::Table;
+    type Mutability = bevy::ecs::component::Mutable;
 }
 
 impl Point {

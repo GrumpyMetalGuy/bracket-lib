@@ -4,7 +4,7 @@ use bevy::{
     prelude::*,
     render::mesh::{Indices, PrimitiveTopology},
     render::render_asset::RenderAssetUsages,
-    sprite::MaterialMesh2dBundle,
+    sprite::MeshMaterial2d,
 };
 
 pub(crate) struct SparseBackendNoBackground {
@@ -107,13 +107,12 @@ impl SparseConsoleBackend for SparseBackendNoBackground {
     fn spawn(&self, commands: &mut Commands, material: Handle<ColorMaterial>, idx: usize) {
         if let Some(mesh_handle) = &self.mesh_handle {
             commands
-                .spawn(MaterialMesh2dBundle {
-                    mesh: mesh_handle.clone().into(),
-                    transform: Transform::default(),
-                    material,
-                    ..default()
-                })
-                .insert(BracketMesh(idx));
+                .spawn((
+                    Mesh2d(mesh_handle.clone()),
+                    MeshMaterial2d(material),
+                    Transform::default(),
+                    BracketMesh(idx),
+                ));
         }
     }
 

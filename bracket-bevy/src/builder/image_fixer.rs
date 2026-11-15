@@ -1,8 +1,6 @@
 use bevy::{
+    image::{ImageAddressMode, ImageFilterMode, ImageSampler, ImageSamplerDescriptor},
     prelude::*,
-    render::texture::{
-        ImageAddressMode, ImageFilterMode, ImageSampler, ImageSamplerDescriptor,
-    },
 };
 
 #[derive(Resource)]

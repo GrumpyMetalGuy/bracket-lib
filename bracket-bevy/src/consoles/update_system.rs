@@ -1,10 +1,8 @@
 use crate::{BracketCamera, BracketContext, TerminalScalingMode};
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
-    ecs::event::Events,
     prelude::*,
     render::camera::RenderTarget,
-    sprite::Mesh2dHandle,
     window::{WindowResized, WindowRef},
 };
 use bevy::window::PrimaryWindow;
@@ -14,10 +12,10 @@ use super::{BracketMesh, ScreenScaler};
 pub(crate) fn update_consoles(
     mut ctx: ResMut<BracketContext>,
     mut meshes: ResMut<Assets<Mesh>>,
-    find_mesh: Query<(&BracketMesh, &Mesh2dHandle)>,
+    find_mesh: Query<(&BracketMesh, &Mesh2d)>,
     scaler: Res<ScreenScaler>,
 ) {
-    let mut new_meshes: Vec<(Mesh2dHandle, Mesh2dHandle, bool)> = Vec::new();
+    let mut new_meshes: Vec<(Mesh2d, Mesh2d, bool)> = Vec::new();
     {
         let mut terms = ctx.terminals.lock();
         for (id, handle) in find_mesh.iter() {
@@ -39,7 +37,7 @@ pub(crate) fn replace_meshes(
     mut ctx: ResMut<BracketContext>,
     mut ev_asset: EventReader<AssetEvent<Mesh>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut update_mesh: Query<&mut Mesh2dHandle, With<BracketMesh>>,
+    mut update_mesh: Query<&mut Mesh2d, With<BracketMesh>>,
 ) {
     for ev in ev_asset.read() {
         if let AssetEvent::Added { id } = ev {
@@ -78,11 +76,10 @@ pub(crate) fn update_timing(mut ctx: ResMut<BracketContext>, diagnostics: Res<Di
 
 pub(crate) fn window_resize(
     mut context: ResMut<BracketContext>,
-    resize_event: Res<Events<WindowResized>>,
+    mut resize_event: EventReader<WindowResized>,
     mut scaler: ResMut<ScreenScaler>,
 ) {
-    let mut reader = resize_event.get_reader();
-    for e in reader.read(&resize_event) {
+    for e in resize_event.read() {
         scaler.set_screen_size(e.width, e.height);
         if let TerminalScalingMode::ResizeTerminals = context.scaling_mode {
             context.resize_terminals(&scaler);
@@ -104,14 +101,14 @@ pub(crate) fn update_mouse_position(
 ) {
     // Modified from: https://bevy-cheatbook.github.io/cookbook/cursor2world.html
     // Bevy really needs a nicer way to do this
-    let (camera, camera_transform) = q_camera.single();
+    let (camera, camera_transform) = q_camera.single().unwrap();
 
     let mut wnd_opt: Option<&Window> = None;
 
     match camera.target {
         RenderTarget::Window(window_ref) => match window_ref {
             WindowRef::Primary => {
-                wnd_opt = Some(primary_window.single());
+                wnd_opt = Some(primary_window.single().unwrap());
             }
             WindowRef::Entity(entity) => {
                 wnd_opt = Some(

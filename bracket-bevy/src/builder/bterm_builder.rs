@@ -7,11 +7,10 @@ use crate::{
 };
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-    prelude::{Plugin, Resource, Msaa, Startup, PostUpdate, PreUpdate, First},
-    utils::HashMap,
+    prelude::{Plugin, Resource, Startup, PostUpdate, PreUpdate, First},
 };
 use bracket_color::prelude::RGBA;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TerminalScalingMode {
@@ -176,10 +175,8 @@ impl BTermBuilder {
 
 impl Plugin for BTermBuilder {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.insert_resource(Msaa::Off);
-
         if self.with_diagnostics {
-            app.add_plugins(FrameTimeDiagnosticsPlugin);
+            app.add_plugins(FrameTimeDiagnosticsPlugin::default());
         }
         if self.log_diagnostics {
             app.add_plugins(LogDiagnosticsPlugin::default());

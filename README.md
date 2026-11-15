@@ -26,6 +26,14 @@ upstream `amethyst/bracket-lib`. Notable behavioral notes:
   deliberately kept for backwards compatibility (see the inline comment
   in `bracket-color/src/rgba.rs`).
 
+- Bumped `bracket-bevy` further to bevy 0.16 (skipping the broken 0.15.x
+  umbrella releases, which had unresolvable sub-crate patch drift). The
+  0.15 "bundle removal" rework was applied: the 2D camera, and 2D mesh
+  entities, are now spawned as plain components (`Camera2d` + `Msaa::Off`;
+  `Mesh2d` + `MeshMaterial2d<ColorMaterial>`) instead of `Camera2dBundle`/
+  `MaterialMesh2dBundle`. MSAA moved from a global `Msaa` resource to a
+  per-camera `Msaa` component on the camera entity.
+
 ## What happened to RLTK?
 
 This *is* RLTK, renamed because it is increasingly finding usage outside of just Roguelikes. It's also been divided into a number of crates, to make it easy to pick-and-choose the features you need.

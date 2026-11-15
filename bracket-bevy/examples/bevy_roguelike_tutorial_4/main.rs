@@ -52,7 +52,7 @@ fn tick(
     let delta = player_input(&keyboard);
     if delta != (0, 0) {
         let mut player_query = queries.p0();
-        let mut pos = player_query.single_mut();
+        let mut pos = player_query.single_mut().unwrap();
         let destination_idx = xy_idx(pos.x + delta.0, pos.y + delta.1);
         if map.0[destination_idx] != TileType::Wall {
             pos.x = min(79, max(0, pos.x + delta.0));
