@@ -127,6 +127,7 @@ impl Font {
             format: wgpu::TextureFormat::Rgba8UnormSrgb,
             usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
             label: None,
+            view_formats: &[],
         });
         wgpu.queue.write_texture(
             wgpu::ImageCopyTexture {
@@ -138,8 +139,8 @@ impl Font {
             &data,
             wgpu::ImageDataLayout {
                 offset: 0,
-                bytes_per_row: std::num::NonZeroU32::new(4 * self.width),
-                rows_per_image: std::num::NonZeroU32::new(self.height),
+                bytes_per_row: Some(4 * self.width),
+                rows_per_image: Some(self.height),
             },
             texture_size,
         );

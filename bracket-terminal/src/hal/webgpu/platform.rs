@@ -4,6 +4,7 @@ use super::Framebuffer;
 use crate::hal::scaler::{default_gutter_size, ScreenScaler};
 use wgpu::{Adapter, Device, Instance, Queue, Surface, SurfaceConfiguration};
 use winit::{event_loop::EventLoop, window::Window};
+use std::sync::Arc;
 
 /// Defines the WGPU platform
 pub struct PlatformGL {
@@ -26,7 +27,7 @@ pub struct PlatformGL {
 
 pub struct WgpuLink {
     pub instance: Instance,
-    pub surface: Surface,
+    pub surface: Surface<'static>,
     pub adapter: Adapter,
     pub device: Device,
     pub queue: Queue,
@@ -39,7 +40,7 @@ unsafe impl Sync for PlatformGL {}
 
 pub struct WrappedContext {
     pub el: EventLoop<()>,
-    pub window: Window,
+    pub window: Arc<Window>,
 }
 
 pub struct InitHints {

@@ -231,10 +231,12 @@ impl SpriteConsoleBackend {
                                 a: 1.0,
                             }),*/
                             load: wgpu::LoadOp::Load,
-                            store: true,
+                            store: wgpu::StoreOp::Store,
                         },
                     })],
                     depth_stencil_attachment: None,
+                    occlusion_query_set: None,
+                    timestamp_writes: None,
                 });
                 render_pass.set_pipeline(&self.render_pipeline);
                 render_pass.set_bind_group(0, font.bind_group.as_ref().unwrap(), &[]);

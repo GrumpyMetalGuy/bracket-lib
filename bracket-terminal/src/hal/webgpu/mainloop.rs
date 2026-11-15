@@ -305,7 +305,7 @@ fn on_resize(
         let mut wgpu = be.wgpu.as_mut().unwrap();
         wgpu.backing_buffer = Framebuffer::new(
             &wgpu.device,
-            wgpu.surface.get_supported_formats(&wgpu.adapter)[0],
+            wgpu.surface.get_capabilities(&wgpu.adapter).formats[0],
             w,
             h,
         );
@@ -604,10 +604,12 @@ fn clear_screen_pass() -> Result<(), wgpu::SurfaceError> {
                             b: 0.0,
                             a: 1.0,
                         }),
-                        store: true,
+                        store: wgpu::StoreOp::Store,
                     },
                 })],
                 depth_stencil_attachment: None,
+                occlusion_query_set: None,
+                timestamp_writes: None,
             });
         }
 
@@ -653,10 +655,7 @@ fn take_screenshot(filename: &str, wgpu: &WgpuLink, bterm: &BTerm, texture: &wgp
             buffer: &output_buffer,
             layout: wgpu::ImageDataLayout {
                 offset: 0,
-                bytes_per_row: Some(
-                    std::num::NonZeroU32::new(buffer_dimensions.padded_bytes_per_row as u32)
-                        .unwrap(),
-                ),
+                bytes_per_row: Some(buffer_dimensions.padded_bytes_per_row as u32),
                 rows_per_image: None,
             },
         },

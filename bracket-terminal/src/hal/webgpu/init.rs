@@ -23,10 +23,10 @@ pub fn init_raw<S: ToString>(
         .with_title(window_title.to_string())
         .with_min_inner_size(scaler.new_window_size())
         .with_inner_size(scaler.new_window_size());
-    let window = el.create_window(window_attributes)?;
+    let window = std::sync::Arc::new(el.create_window(window_attributes)?);
 
     let (instance, surface, adapter, device, queue, config) =
-        pollster::block_on(init_adapter(&window));
+        pollster::block_on(init_adapter(window.clone()));
 
     // Shaders
     let mut shaders: Vec<Shader> = Vec::new();
@@ -58,7 +58,7 @@ pub fn init_raw<S: ToString>(
     scaler.change_logical_size(width_pixels, height_pixels, initial_dpi_factor as f32);
     let backing_buffer = Framebuffer::new(
         &device,
-        surface.get_supported_formats(&adapter)[0],
+        surface.get_capabilities(&adapter).formats[0],
         scaler.logical_size.0,
         scaler.logical_size.1,
     );
@@ -107,10 +107,10 @@ pub fn init_raw<S: ToString>(
 }
 
 async fn init_adapter(
-    window: &Window,
+    window: std::sync::Arc<Window>,
 ) -> (
     Instance,
-    Surface,
+    Surface<'static>,
     Adapter,
     Device,
     Queue,
@@ -120,8 +120,11 @@ async fn init_adapter(
 
     // The instance is a handle to our GPU
     // Backends::all => Vulkan + Metal + DX12 + Browser WebGPU
-    let instance = wgpu::Instance::new(wgpu::Backends::all());
-    let surface = unsafe { instance.create_surface(window) };
+    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+        backends: wgpu::Backends::all(),
+        ..Default::default()
+    });
+    let surface = instance.create_surface(window).unwrap();
     let adapter = instance
         .request_adapter(&wgpu::RequestAdapterOptions {
             power_preference: wgpu::PowerPreference::default(),
@@ -134,8 +137,8 @@ async fn init_adapter(
     let (device, queue) = adapter
         .request_device(
             &wgpu::DeviceDescriptor {
-                features: wgpu::Features::empty(),
-                limits: wgpu::Limits::default(),
+                required_features: wgpu::Features::empty(),
+                required_limits: wgpu::Limits::default(),
                 label: None,
             },
             None, // Trace path
@@ -147,10 +150,13 @@ async fn init_adapter(
 
     let config = wgpu::SurfaceConfiguration {
         usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        format: surface.get_supported_formats(&adapter)[0],
+        format: surface.get_capabilities(&adapter).formats[0],
         width: size.width,
         height: size.height,
         present_mode: wgpu::PresentMode::Fifo,
+        alpha_mode: wgpu::CompositeAlphaMode::Auto,
+        view_formats: vec![],
+        desired_maximum_frame_latency: 2,
     };
     surface.configure(&device, &config);
 
