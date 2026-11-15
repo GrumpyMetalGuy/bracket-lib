@@ -3,11 +3,9 @@ pub mod shader_strings;
 use glow::NativeVertexArray;
 pub use init::*;
 mod mainloop;
-#[path = "../dummy/keycodes.rs"]
-mod keycodes;
 use crate::hal::scaler::{default_gutter_size, ScreenScaler};
 use crate::hal::ConsoleBacking;
-pub use keycodes::VirtualKeyCode;
+pub use crate::hal::keycodes::VirtualKeyCode;
 pub use mainloop::*;
 use parking_lot::Mutex;
 use std::any::Any;

@@ -12,12 +12,12 @@ mod backend;
 pub use backend::*;
 mod mainloop;
 pub use mainloop::*;
-pub use winit::event::VirtualKeyCode;
 mod backing;
 pub(crate) use backing::*;
 mod framebuffer;
 pub(crate) use framebuffer::*;
 mod quadrender;
+pub use crate::hal::keycodes::VirtualKeyCode;
 
 pub fn log(s: &str) {
     println!("{}", s);

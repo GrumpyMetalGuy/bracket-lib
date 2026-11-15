@@ -1,4 +1,7 @@
 // Enable modules based on target architecture
+#[path = "dummy/keycodes.rs"]
+pub mod keycodes;
+
 #[cfg(feature = "opengl")]
 mod gl_common;
 

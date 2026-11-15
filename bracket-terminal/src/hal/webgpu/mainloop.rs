@@ -4,6 +4,7 @@ use super::{
     quadrender::QuadRender, ConsoleBacking, FancyConsoleBackend, Font, Framebuffer,
     SimpleConsoleBackend, SparseConsoleBackend, SpriteConsoleBackend, WgpuLink, CONSOLE_BACKING,
 };
+use crate::hal::keycodes::physical_key_to_virtual_keycode;
 use crate::{
     gamestate::{BTerm, GameState},
     hal::scaler::FontScaler,
@@ -17,7 +18,11 @@ use bracket_geometry::prelude::Point;
 use std::mem::size_of;
 use std::{rc::Rc, time::Instant};
 use wgpu::TextureViewDescriptor;
-use winit::{dpi::PhysicalSize, event::*, event_loop::ControlFlow};
+use winit::{
+    dpi::PhysicalSize,
+    event::{ElementState, Event, MouseButton, WindowEvent},
+    event_loop::ControlFlow,
+};
 
 const TICK_TYPE: ControlFlow = ControlFlow::Poll;
 
@@ -71,68 +76,67 @@ pub fn main_loop<GS: GameState>(mut bterm: BTerm, mut gamestate: GS) -> BResult<
     let spin_sleeper = spin_sleep::SpinSleeper::default();
     let my_window_id = window.id();
 
-    el.run(move |event, _, control_flow| {
+    el.run(move |event, event_loop| {
+        event_loop.set_control_flow(TICK_TYPE);
         let wait_time = BACKEND.lock().frame_sleep_time.unwrap_or(33); // Hoisted to reduce locks
-        *control_flow = TICK_TYPE;
 
         if bterm.quitting {
-            *control_flow = ControlFlow::Exit;
+            event_loop.exit();
         }
 
-        match &event {
-            Event::RedrawEventsCleared => {
-                let frame_timer = Instant::now();
-                if window.inner_size().width == 0 || window.inner_size().height == 0 {
-                    return;
-                }
-
-                let execute_ms = now.elapsed().as_millis() as u64 - prev_ms as u64;
-                if execute_ms >= wait_time {
-                    if queued_resize_event.is_some() {
-                        if let Some(resize) = &queued_resize_event {
-                            on_resize(
-                                &mut bterm,
-                                resize.physical_size,
-                                resize.dpi_scale_factor,
-                                resize.send_event,
-                                &mut backing_flip,
-                            )
-                            .unwrap();
-                        }
-                        queued_resize_event = None;
-                    }
-
-                    tock(
-                        &mut bterm,
-                        &mut gamestate,
-                        &mut frames,
-                        &mut prev_seconds,
-                        &mut prev_ms,
-                        &now,
-                        &mut backing_flip,
-                    );
-                    //wc.swap_buffers().unwrap();
-                    // Moved from new events, which doesn't make sense
-                    clear_input_state(&mut bterm);
-                }
-
-                // Wait for an appropriate amount of time
-                let time_since_last_frame = frame_timer.elapsed().as_millis() as u64;
-                if time_since_last_frame < wait_time {
-                    let delay = u64::min(33, wait_time - time_since_last_frame);
-                    #[cfg(feature = "low_cpu")]
-                    spin_sleeper.sleep(std::time::Duration::from_millis(delay));
-                }
+        match event {
+            Event::AboutToWait => {
+                window.request_redraw();
             }
-            Event::WindowEvent { event, window_id } => {
-                // Fast return for other windows
-                if *window_id != my_window_id {
-                    //println!("Dropped event from other window");
+            Event::WindowEvent { window_id, event } => {
+                if window_id != my_window_id {
                     return;
                 }
 
                 // Handle Window Events
                 match event {
+                    WindowEvent::RedrawRequested => {
+                        let frame_timer = Instant::now();
+                        if window.inner_size().width == 0 || window.inner_size().height == 0 {
+                            return;
+                        }
+
+                        let execute_ms = now.elapsed().as_millis() as u64 - prev_ms as u64;
+                        if execute_ms >= wait_time {
+                            if queued_resize_event.is_some() {
+                                if let Some(resize) = &queued_resize_event {
+                                    on_resize(
+                                        &mut bterm,
+                                        resize.physical_size,
+                                        resize.dpi_scale_factor,
+                                        resize.send_event,
+                                        &mut backing_flip,
+                                    )
+                                    .unwrap();
+                                }
+                                queued_resize_event = None;
+                            }
+
+                            tock(
+                                &mut bterm,
+                                &mut gamestate,
+                                &mut frames,
+                                &mut prev_seconds,
+                                &mut prev_ms,
+                                &now,
+                                &mut backing_flip,
+                            );
+                            clear_input_state(&mut bterm);
+                        }
+
+                        // Wait for an appropriate amount of time
+                        let time_since_last_frame = frame_timer.elapsed().as_millis() as u64;
+                        if time_since_last_frame < wait_time {
+                            let delay = u64::min(33, wait_time - time_since_last_frame);
+                            #[cfg(feature = "low_cpu")]
+                            spin_sleeper.sleep(std::time::Duration::from_millis(delay));
+                        }
+                    }
                     WindowEvent::Moved(physical_position) => {
                         bterm.on_event(BEvent::Moved {
                             new_position: Point::new(physical_position.x, physical_position.y),
@@ -140,8 +144,6 @@ pub fn main_loop<GS: GameState>(mut bterm: BTerm, mut gamestate: GS) -> BResult<
 
                         let scale_factor = window.scale_factor();
                         let physical_size = window.inner_size();
-                        //wc.resize(physical_size);
-                        //on_resize(&mut bterm, physical_size, scale_factor, true).unwrap();
                         queued_resize_event = Some(ResizeEvent {
                             physical_size,
                             dpi_scale_factor: scale_factor,
@@ -151,8 +153,6 @@ pub fn main_loop<GS: GameState>(mut bterm: BTerm, mut gamestate: GS) -> BResult<
                     WindowEvent::Resized(_physical_size) => {
                         let scale_factor = window.scale_factor();
                         let physical_size = window.inner_size();
-                        //wc.resize(physical_size);
-                        //on_resize(&mut bterm, physical_size, scale_factor, true).unwrap();
                         queued_resize_event = Some(ResizeEvent {
                             physical_size,
                             dpi_scale_factor: scale_factor,
@@ -162,16 +162,13 @@ pub fn main_loop<GS: GameState>(mut bterm: BTerm, mut gamestate: GS) -> BResult<
                     WindowEvent::CloseRequested => {
                         // If not using events, just close. Otherwise, push the event
                         if !INPUT.lock().use_events {
-                            *control_flow = ControlFlow::Exit;
+                            event_loop.exit();
                         } else {
                             bterm.on_event(BEvent::CloseRequested);
                         }
                     }
-                    WindowEvent::ReceivedCharacter(char) => {
-                        bterm.on_event(BEvent::Character { c: *char });
-                    }
                     WindowEvent::Focused(focused) => {
-                        bterm.on_event(BEvent::Focused { focused: *focused });
+                        bterm.on_event(BEvent::Focused { focused });
                     }
                     WindowEvent::CursorMoved { position: pos, .. } => {
                         bterm.on_mouse_position(pos.x, pos.y);
@@ -184,15 +181,20 @@ pub fn main_loop<GS: GameState>(mut bterm: BTerm, mut gamestate: GS) -> BResult<
                             MouseButton::Left => 0,
                             MouseButton::Right => 1,
                             MouseButton::Middle => 2,
-                            MouseButton::Other(num) => 3 + *num as usize,
+                            MouseButton::Back => 3,
+                            MouseButton::Forward => 4,
+                            MouseButton::Other(num) => 5 + num as usize,
                         };
-                        bterm.on_mouse_button(button, *state == ElementState::Pressed);
+                        bterm.on_mouse_button(button, state == ElementState::Pressed);
                     }
 
-                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        let scale_factor = window.scale_factor();
+                    WindowEvent::ScaleFactorChanged {
+                        scale_factor,
+                        mut inner_size_writer,
+                        ..
+                    } => {
                         let physical_size = window.inner_size();
-                        //wc.resize(physical_size);
+                        let _ = inner_size_writer.request_inner_size(physical_size);
                         on_resize(
                             &mut bterm,
                             physical_size,
@@ -202,26 +204,28 @@ pub fn main_loop<GS: GameState>(mut bterm: BTerm, mut gamestate: GS) -> BResult<
                         )
                         .unwrap();
                         bterm.on_event(BEvent::ScaleFactorChanged {
-                            new_size: Point::new(new_inner_size.width, new_inner_size.height),
+                            new_size: Point::new(physical_size.width, physical_size.height),
                             dpi_scale_factor: scale_factor as f32,
                         })
                     }
 
-                    WindowEvent::KeyboardInput {
-                        input:
-                            KeyboardInput {
-                                virtual_keycode: Some(virtual_keycode),
-                                state,
-                                scancode,
-                                ..
-                            },
-                        ..
-                    } => bterm.on_key(*virtual_keycode, *scancode, *state == ElementState::Pressed),
+                    WindowEvent::KeyboardInput { event, .. } => {
+                        if let Some(key) = physical_key_to_virtual_keycode(&event.physical_key) {
+                            bterm.on_key(key, 0, event.state == ElementState::Pressed);
+                        }
+                        if event.state == ElementState::Pressed {
+                            if let Some(text) = event.text.as_ref() {
+                                for ch in text.chars() {
+                                    bterm.on_event(BEvent::Character { c: ch });
+                                }
+                            }
+                        }
+                    }
 
                     WindowEvent::ModifiersChanged(modifiers) => {
-                        bterm.shift = modifiers.shift();
-                        bterm.alt = modifiers.alt();
-                        bterm.control = modifiers.ctrl();
+                        bterm.shift = modifiers.state().shift_key();
+                        bterm.alt = modifiers.state().alt_key();
+                        bterm.control = modifiers.state().control_key();
                     }
                     _ => {}
                 }
@@ -229,6 +233,8 @@ pub fn main_loop<GS: GameState>(mut bterm: BTerm, mut gamestate: GS) -> BResult<
             _ => {}
         }
     });
+
+    Ok(())
 }
 
 fn largest_active_font() -> (u32, u32) {

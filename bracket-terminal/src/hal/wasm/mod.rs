@@ -1,4 +1,4 @@
-pub use winit::event::VirtualKeyCode;
+pub use crate::hal::keycodes::VirtualKeyCode;
 mod init;
 pub mod shader_strings;
 pub use init::*;

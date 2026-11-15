@@ -3,7 +3,7 @@ use crate::prelude::BTerm;
 use crate::BResult;
 use parking_lot::Mutex;
 
-pub use winit::event::VirtualKeyCode;
+pub use crate::hal::keycodes::VirtualKeyCode;
 
 use pancurses::Window;
 
@@ -26,6 +26,7 @@ pub struct InitHints {
     pub vsync: bool,
     pub fullscreen: bool,
     pub frame_sleep_time: Option<f32>,
+    pub fitscreen: bool,
 }
 
 impl InitHints {
@@ -34,6 +35,7 @@ impl InitHints {
             vsync: true,
             fullscreen: false,
             frame_sleep_time: None,
+            fitscreen: false,
         }
     }
 }

@@ -7,9 +7,8 @@ use crate::{
 };
 use wgpu::{Adapter, Device, Instance, Queue, Surface, SurfaceConfiguration};
 use winit::{
-    dpi::LogicalSize,
     event_loop::EventLoop,
-    window::{Window, WindowBuilder},
+    window::{Window, WindowAttributes},
 };
 
 pub fn init_raw<S: ToString>(
@@ -19,12 +18,12 @@ pub fn init_raw<S: ToString>(
     platform_hints: InitHints,
 ) -> BResult<BTerm> {
     let mut scaler = ScreenScaler::new(platform_hints.desired_gutter, width_pixels, height_pixels);
-    let el = EventLoop::new();
-    let wb = WindowBuilder::new()
+    let el = EventLoop::new()?;
+    let window_attributes = WindowAttributes::default()
         .with_title(window_title.to_string())
         .with_min_inner_size(scaler.new_window_size())
         .with_inner_size(scaler.new_window_size());
-    let window = wb.build(&el).unwrap();
+    let window = el.create_window(window_attributes)?;
 
     let (instance, surface, adapter, device, queue, config) =
         pollster::block_on(init_adapter(&window));
