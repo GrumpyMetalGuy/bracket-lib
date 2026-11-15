@@ -22,6 +22,8 @@ Legend: [X] fixed (branch named), [-] skipped (feature/env/question/no repro/non
 - #365/#366 crossterm flush        — fix/365
 - #303 low_cpu forwarding           — pr/303 (merged)
 - #335 hashbrown astar              — pr/335 (merged)
+- #313 wgpu bump + nearest filter   — fix/wgpu-bump (merged, wgpu 0.19)
+- (winit 0.30 cross-backend breakage) — fix/winit-030 (merged)
 
 ## Skipped (not code bugs this fork should change)
 
@@ -35,11 +37,9 @@ Legend: [X] fixed (branch named), [-] skipped (feature/env/question/no repro/non
   #338, #361, #362 — usage/perf/meta/unreproducible (no code change)
 - #257 — duplicate of #346-style crossterm sizing; needs repro
 - #143, #304, #305, #307, #313, #317, #321, #342, #351, #364 — PRs;
-  #321/#364 overlapped by #343/#329 fixes here; #303 (low_cpu) and #335
-  (hashbrown) merged; the rest are feature/dependency/perf/styling
-  changes left to upstream. #313 (wgpu 0.15) not merged: the webgpu
-  feature is already broken on master by the winit 0.30 upgrade, so the
-  bump can't be verified and wgpu 0.15 itself is stale. #305 adds a
+  #321/#364 overlapped by #343/#329 fixes here; #303 (low_cpu), #335
+  (hashbrown) and #313 (wgpu bump, now 0.19) merged; the rest are
+  feature/dependency/perf/styling changes left to upstream. #305 adds a
   required `Console::get_offset` trait method (breaking); #304 changes
   `DiceType::default()` and drops regex (behavior change); #342 is a
   bevy 0.9->0.11 migration.
@@ -50,6 +50,8 @@ Legend: [X] fixed (branch named), [-] skipped (feature/env/question/no repro/non
   exists in wasm InitHints), so no branch was needed.
 - Issue #363 kept with a straightforward optimality test; the g-cost bug
   mainly understates `f` for nodes more than one hop from the start.
-- The cross_term feature does not compile on master (winit 0.30 removed
-  `VirtualKeyCode`); that is separate from the #365 flush fix and left
-  as-is.
+- The winit 0.30 upgrade broke cross_term, curses, wasm and webgpu on
+  master (removed `VirtualKeyCode` and several event types).
+  fix/winit-030 (merged) restored cross_term, curses and wasm, and
+  fix/wgpu-bump (merged) restored webgpu by bumping wgpu to 0.19. All
+  four backends plus native now compile.
