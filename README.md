@@ -45,6 +45,10 @@ upstream `amethyst/bracket-lib`. Notable behavioral notes:
   `Camera::target` moved from a field to a required `RenderTarget` component
   (queried separately). `AssetEvent` ids are now passed by reference.
 
+- Bumped `bracket-bevy` to bevy 0.19. No source changes: the 0.18 API used here
+  was unchanged in 0.19. Note this pulls wgpu 29 transitively, which is separate
+  from the wgpu 0.19 backend used by `bracket-terminal`.
+
 ## What happened to RLTK?
 
 This *is* RLTK, renamed because it is increasingly finding usage outside of just Roguelikes. It's also been divided into a number of crates, to make it easy to pick-and-choose the features you need.
