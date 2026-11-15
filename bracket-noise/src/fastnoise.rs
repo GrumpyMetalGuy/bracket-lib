@@ -3687,7 +3687,7 @@ impl FastNoise {
 
                             let new_distance = vec_x * vec_x + vec_y * vec_y + vec_z * vec_z;
 
-                            for i in (0..self.cellular_distance_index.1).rev() {
+                            for i in (1..=self.cellular_distance_index.1).rev() {
                                 distance[i as usize] = f32::max(
                                     f32::min(distance[i as usize], new_distance),
                                     distance[i as usize - 1],
@@ -3714,7 +3714,7 @@ impl FastNoise {
                             let new_distance =
                                 fast_abs_f(vec_x) + fast_abs_f(vec_y) + fast_abs_f(vec_z);
 
-                            for i in (0..=self.cellular_distance_index.1).rev() {
+                            for i in (1..=self.cellular_distance_index.1).rev() {
                                 distance[i as usize] = f32::max(
                                     f32::min(distance[i as usize], new_distance),
                                     distance[i as usize - 1],
@@ -3742,7 +3742,7 @@ impl FastNoise {
                                 (fast_abs_f(vec_x) + fast_abs_f(vec_y) + fast_abs_f(vec_z))
                                     + (vec_x * vec_x + vec_y * vec_y + vec_z * vec_z);
 
-                            for i in (0..=self.cellular_distance_index.1).rev() {
+                            for i in (1..=self.cellular_distance_index.1).rev() {
                                 distance[i as usize] = f32::max(
                                     f32::min(distance[i as usize], new_distance),
                                     distance[i as usize - 1],
@@ -3887,7 +3887,7 @@ impl FastNoise {
 
                         let new_distance = vec_x * vec_x + vec_y * vec_y;
 
-                        for i in (0..=self.cellular_distance_index.1).rev() {
+                        for i in (1..=self.cellular_distance_index.1).rev() {
                             distance[i as usize] = f32::max(
                                 f32::min(distance[i as usize], new_distance),
                                 distance[i as usize - 1],
@@ -3909,7 +3909,7 @@ impl FastNoise {
 
                         let new_distance = fast_abs_f(vec_x) + fast_abs_f(vec_y);
 
-                        for i in (0..=self.cellular_distance_index.1).rev() {
+                        for i in (1..=self.cellular_distance_index.1).rev() {
                             distance[i as usize] = f32::max(
                                 f32::min(distance[i as usize], new_distance),
                                 distance[i as usize - 1],
@@ -3932,7 +3932,7 @@ impl FastNoise {
                         let new_distance = (fast_abs_f(vec_x) + fast_abs_f(vec_y))
                             + (vec_x * vec_x + vec_y * vec_y);
 
-                        for i in (0..=self.cellular_distance_index.1).rev() {
+                        for i in (1..=self.cellular_distance_index.1).rev() {
                             distance[i as usize] = f32::max(
                                 f32::min(distance[i as usize], new_distance),
                                 distance[i as usize - 1],
@@ -4240,6 +4240,20 @@ mod tests {
         let v = noise.get_noise(0.5, 0.5);
         assert!(v != 0.0, "seeded noise should not be flat");
     }
+
+    #[test]
+    fn distance2_index_does_not_underflow() {
+        let mut noise = FastNoise::seeded(1337);
+        noise.set_noise_type(NoiseType::Cellular);
+        noise.set_cellular_return_type(CellularReturnType::Distance2);
+        noise.set_cellular_distance_indices(0, 3);
+        for y in 0..64 {
+            for x in 0..64 {
+                let _ = noise.get_noise(x as f32, y as f32);
+            }
+        }
+    }
+
 
     #[test]
     // Tests that we make an RGB triplet at defaults and it is black.
