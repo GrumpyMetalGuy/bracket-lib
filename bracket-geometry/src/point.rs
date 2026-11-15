@@ -6,13 +6,19 @@ use ultraviolet::Vec2;
 pub type PointF = Vec2;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Default, Hash)]
 /// Helper struct defining a 2D point in space.
 pub struct Point {
     /// The point's X location
     pub x: i32,
     /// The point's Y location
     pub y: i32,
+}
+
+impl std::fmt::Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{},{}", self.x, self.y)
+    }
 }
 
 #[cfg(feature = "specs")]
