@@ -354,7 +354,7 @@ impl BTerm {
 
     /// Internal: mark a mouse press
     pub(crate) fn on_mouse_button(&mut self, button_num: usize, pressed: bool) {
-        if button_num == 0 {
+        if button_num == 0 && pressed {
             self.left_click = true;
         }
         let mut input = INPUT.lock();
