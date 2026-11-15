@@ -45,7 +45,7 @@ pub(crate) fn replace_meshes(
         if let AssetEvent::Added { id } = ev {
             for (old, new, done) in ctx.mesh_replacement.iter_mut() {
                 if *id == new.0.id() {
-                    update_mesh.for_each_mut(|mut m| {
+                    update_mesh.iter_mut().for_each(|mut m| {
                         if old.0.id() == m.0.id() {
                             *m = new.clone();
                         }
@@ -57,7 +57,7 @@ pub(crate) fn replace_meshes(
     }
 
     for (old, _, _) in ctx.mesh_replacement.iter().filter(|(_, _, done)| *done) {
-        meshes.remove(old.0.clone());
+        meshes.remove(old.0.id());
     }
     ctx.mesh_replacement.retain(|(_, _, done)| !done);
 }
@@ -145,7 +145,7 @@ pub(crate) fn update_mouse_position(
             let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
             let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
             let ndc_to_world =
-                camera_transform.compute_matrix() * camera.projection_matrix().inverse();
+                camera_transform.compute_matrix() * camera.clip_from_view().inverse();
             let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
             let world_pos: Vec2 = world_pos.truncate();
 
