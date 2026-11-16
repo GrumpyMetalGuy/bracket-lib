@@ -17,7 +17,7 @@ impl FontScaler {
 
     pub(crate) fn texture_coords(&self, glyph: u16) -> [f32; 4] {
         let base_x = glyph % self.chars_per_row;
-        let base_y = glyph / self.n_rows;
+        let base_y = glyph / self.chars_per_row;
         let scale_x = 1.0 / self.chars_per_row as f32;
         let scale_y = 1.0 / self.n_rows as f32;
         let nudge_pixel_h = (1.0 / (self.chars_per_row as f32 * self.font_height_pixels.0)) / 20.0;
@@ -132,4 +132,20 @@ pub(crate) fn default_gutter_size() -> f32 {
     // Testing showed that an 8-pixel gutter is enough to fix
     // Big Sur and Windows 11.
     0.0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::FontScaler;
+
+    // Non-square layout: 4 columns x 2 rows. Glyph index is row-major by
+    // column count, so the 5th glyph (index 4) should be in row 1, column 0.
+    #[test]
+    fn texture_coords_uses_columns_per_row() {
+        let scaler = FontScaler::new(4, 2, (8.0, 8.0));
+        let coords = scaler.texture_coords(4);
+        // base_x = 4 % 4 = 0, base_y = 4 / 4 = 1 (row 1), not 4 / 2 = 2 (out of range).
+        // Row 1 starts at scale_y * 1 = 0.5 (plus the nudge).
+        assert!(coords[1] > 0.5 && coords[1] < 0.55, "got {}", coords[1]);
+    }
 }
