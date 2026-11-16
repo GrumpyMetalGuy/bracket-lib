@@ -27,7 +27,7 @@ pub enum HtmlColorConversionError {
 
 // Implement operator overloading
 
-/// Support adding a float to a color. The result is clamped via the constructor.
+/// Support adding a float to a color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Add<f32> for RGB {
     type Output = Self;
     #[must_use]
@@ -39,7 +39,7 @@ impl ops::Add<f32> for RGB {
     }
 }
 
-/// Support adding an RGB to a color. The result is clamped via the constructor.
+/// Support adding an RGB to a color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Add<RGB> for RGB {
     type Output = Self;
     #[must_use]
@@ -51,7 +51,7 @@ impl ops::Add<RGB> for RGB {
     }
 }
 
-/// Support subtracting a float from a color. The result is clamped via the constructor.
+/// Support subtracting a float from a color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Sub<f32> for RGB {
     type Output = Self;
     #[must_use]
@@ -63,7 +63,7 @@ impl ops::Sub<f32> for RGB {
     }
 }
 
-/// Support subtracting an RGB from a color. The result is clamped via the constructor.
+/// Support subtracting an RGB from a color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Sub<RGB> for RGB {
     type Output = Self;
     #[must_use]
@@ -75,7 +75,7 @@ impl ops::Sub<RGB> for RGB {
     }
 }
 
-/// Support multiplying a color by a float. The result is clamped via the constructor.
+/// Support multiplying a color by a float. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Mul<f32> for RGB {
     type Output = Self;
     #[must_use]
@@ -87,7 +87,7 @@ impl ops::Mul<f32> for RGB {
     }
 }
 
-/// Support multiplying a color by another color. The result is clamped via the constructor.
+/// Support multiplying a color by another color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Mul<RGB> for RGB {
     type Output = Self;
     #[must_use]

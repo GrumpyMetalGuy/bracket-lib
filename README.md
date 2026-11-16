@@ -19,6 +19,17 @@ Early work has begun on writing a manual. You can find it in the `manual` folder
 This fork applies a set of bug fixes and dependency upgrades on top of
 upstream `amethyst/bracket-lib`. Notable behavioral notes:
 
+- Color-system corrections:
+  - `RGBA::new()` and `RGBA::default()` now produce *opaque* black
+    (alpha 1.0) instead of transparent black (alpha 0.0).
+  - The `RgbLerp`/`HsvLerp`/`RgbaLerp`/`AlphaLerp` iterators now yield
+    `steps + 1` points (both endpoints inclusive) and report a correct
+    `ExactSizeIterator::len()`; `RgbaLerp`/`AlphaLerp` gained
+    `ExactSizeIterator` for consistency. A `steps` of 0 yields the start
+    color once (no NaN division).
+  - Operator doc comments corrected: `Add`/`Sub`/`Mul` do NOT clamp; they
+    can produce out-of-0..1 components.
+
 - Bumped `bracket-bevy` to bevy 0.13. `bracket-color`'s `RGB`/`RGBA` ->
   `bevy::Color` conversions map to bevy's sRGB variants to preserve
   pre-0.13 behavior. `RGBA::as_rgba_f32()` still returns *linear* RGBA

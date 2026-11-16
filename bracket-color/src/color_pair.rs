@@ -52,16 +52,16 @@ mod tests {
     }
 
     #[test]
-    // Tests that we make a a pair of colors from RGB, and they are both black.
+    // Tests that we make a a pair of colors from RGBA, and they are both opaque black.
     fn make_rgba_pair() {
         let cp = ColorPair::new(RGBA::new(), RGBA::new());
         assert!(cp.fg.r < std::f32::EPSILON);
         assert!(cp.fg.g < std::f32::EPSILON);
         assert!(cp.fg.b < std::f32::EPSILON);
-        assert!(cp.fg.a < std::f32::EPSILON);
+        assert!((cp.fg.a - 1.0).abs() < std::f32::EPSILON);
         assert!(cp.bg.r < std::f32::EPSILON);
         assert!(cp.bg.g < std::f32::EPSILON);
         assert!(cp.bg.b < std::f32::EPSILON);
-        assert!(cp.bg.a < std::f32::EPSILON);
+        assert!((cp.bg.a - 1.0).abs() < std::f32::EPSILON);
     }
 }

@@ -3,7 +3,7 @@ use std::convert::From;
 use std::ops;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(PartialEq, Copy, Clone, Default, Debug)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 /// Represents an R/G/B triplet, in the range 0..1 (32-bit float)
 pub struct RGBA {
     /// The red component (0..1)
@@ -16,9 +16,16 @@ pub struct RGBA {
     pub a: f32,
 }
 
+/// Default is opaque black, matching [`RGBA::new`].
+impl Default for RGBA {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 // Implement operator overloading
 
-/// Support adding a float to a color. The result is clamped via the constructor.
+/// Support adding a float to a color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Add<f32> for RGBA {
     type Output = Self;
     #[must_use]
@@ -31,7 +38,7 @@ impl ops::Add<f32> for RGBA {
     }
 }
 
-/// Support adding an RGB to a color. The result is clamped via the constructor.
+/// Support adding an RGB to a color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Add<RGBA> for RGBA {
     type Output = Self;
     #[must_use]
@@ -44,7 +51,7 @@ impl ops::Add<RGBA> for RGBA {
     }
 }
 
-/// Support subtracting a float from a color. The result is clamped via the constructor.
+/// Support subtracting a float from a color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Sub<f32> for RGBA {
     type Output = Self;
     #[must_use]
@@ -57,7 +64,7 @@ impl ops::Sub<f32> for RGBA {
     }
 }
 
-/// Support subtracting an RGB from a color. The result is clamped via the constructor.
+/// Support subtracting an RGB from a color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Sub<RGBA> for RGBA {
     type Output = Self;
     #[must_use]
@@ -70,7 +77,7 @@ impl ops::Sub<RGBA> for RGBA {
     }
 }
 
-/// Support multiplying a color by a float. The result is clamped via the constructor.
+/// Support multiplying a color by a float. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Mul<f32> for RGBA {
     type Output = Self;
     #[must_use]
@@ -83,7 +90,7 @@ impl ops::Mul<f32> for RGBA {
     }
 }
 
-/// Support multiplying a color by another color. The result is clamped via the constructor.
+/// Support multiplying a color by another color. The result is NOT clamped; components may go outside 0..1. Clamp with `from_f32`/`from_u8` if required.
 impl ops::Mul<RGBA> for RGBA {
     type Output = Self;
     #[must_use]
@@ -97,14 +104,14 @@ impl ops::Mul<RGBA> for RGBA {
 }
 
 impl RGBA {
-    /// Constructs a new, zeroed (black) RGB triplet.
+    /// Constructs a new, zeroed (opaque black) RGBA color.
     #[must_use]
     pub fn new() -> Self {
         Self {
             r: 0.0,
             g: 0.0,
             b: 0.0,
-            a: 0.0,
+            a: 1.0,
         }
     }
 
@@ -492,13 +499,13 @@ mod tests {
     use crate::prelude::*;
 
     #[test]
-    // Tests that we make an RGB triplet at defaults and it is black.
+    // Tests that we make an RGBA triplet at defaults and it is opaque black.
     fn make_rgba_minimal() {
         let black = RGBA::new();
         assert!(black.r < std::f32::EPSILON);
         assert!(black.g < std::f32::EPSILON);
         assert!(black.b < std::f32::EPSILON);
-        assert!(black.a < std::f32::EPSILON);
+        assert!((black.a - 1.0).abs() < std::f32::EPSILON);
     }
 
     #[test]
