@@ -7,7 +7,7 @@ use crate::{
 };
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-    prelude::{Plugin, Resource, Startup, PostUpdate, PreUpdate, First},
+    prelude::{Plugin, Resource, Startup, PostUpdate, PreUpdate, First, IntoScheduleConfigs},
 };
 use bracket_color::prelude::RGBA;
 use std::collections::{HashMap, HashSet};
@@ -189,14 +189,17 @@ impl Plugin for BTermBuilder {
             app.add_systems(PreUpdate, update_mouse_position);
         }
 
-        if self.auto_apply_batches {
-            app.add_systems(PostUpdate, apply_all_batches);
-        }
-
-        app.add_systems(PostUpdate, update_consoles);
-        app.add_systems(PostUpdate, replace_meshes);
-        app.add_systems(PostUpdate, window_resize);
+        // The PostUpdate systems form a producer -> consumer chain that must
+        // run in a fixed order: apply draw batches into the terminals, resize
+        // terminals and recalculate the scaler, build new meshes from the
+        // updated terminals, then swap the new meshes in. fix_images is a
+        // one-time font-sampler fix and stays independent.
+        app.add_systems(PostUpdate, (window_resize, update_consoles, replace_meshes).chain());
         app.add_systems(PostUpdate, fix_images);
+
+        if self.auto_apply_batches {
+            app.add_systems(PostUpdate, apply_all_batches.before(update_consoles));
+        }
 
         if self.with_random_number_generator {
             app.insert_resource(RandomNumbers::new());
